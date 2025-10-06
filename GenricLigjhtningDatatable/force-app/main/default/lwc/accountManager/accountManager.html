@@ -1,0 +1,133 @@
+<template>
+  <lightning-card variant="Narrow" title={headerName} icon-name={headerIconName} icon-type={headerIconType}>
+    <lightning-button icon-name="utility:table_settings" variant="border-filled" alternative-text="Display More Fields"
+      slot="actions" label="Display More Fields" onclick={showModelPopup}></lightning-button>
+
+    <!-- Modal Popup -->
+    <template if:true={isModalOpen}>
+      <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+          <header class="slds-modal__header">
+            <h2 class="slds-modal__title">Select More Fields</h2>
+          </header>
+          <div class="slds-modal__content slds-p-around_medium">
+            <!-- Add your modal content here -->
+             <lightning-dual-listbox name="Fields"
+                            label="Select Fields to Display"
+                            source-label="Available"
+                            selected-label="Selected"
+                            field-level-help="Select Fields to Display in Table"
+                            options={options}
+                            value={values}
+                            onchange={handleDualListboxChange}></lightning-dual-listbox>
+          </div>
+          <footer class="slds-modal__footer">
+            <lightning-button variant="neutral" label="Cancel" onclick={closeModal}></lightning-button>
+            <lightning-button variant="brand" class="slds-p-left_x-small" label="Save" onclick={saveModal}></lightning-button>
+          </footer>
+        </div>
+      </section>
+      <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+
+    <div class="slds-p-around_small">
+
+      <!-- 🔍 Global Search -->
+      <lightning-input type="search" label="Search" placeholder="Search by Name, Industry, Phone, Type..."
+        value={searchKeyword} onchange={handleSearchChange}>
+      </lightning-input>
+
+      <!-- ⚙️ Advanced Filter Section -->
+      <div class="slds-grid slds-gutters slds-m-top_small">
+
+        <!-- Field -->
+        <div class="slds-col">
+          <lightning-combobox label="Field" value={selectedField} options={fieldOptions} onchange={handleFieldChange}>
+          </lightning-combobox>
+        </div>
+
+        <!-- Operator -->
+        <div class="slds-col">
+          <lightning-combobox label="Operator" value={selectedOperator} options={operatorOptions}
+            onchange={handleOperatorChange}>
+          </lightning-combobox>
+        </div>
+
+        <!-- Value -->
+       <div class="slds-col">
+          <!-- If picklist field, show combobox -->
+          <template if:true={isPicklistField}>
+            <lightning-combobox label="Value" value={filterValue} options={picklistOptions} onchange={handleValueChange}>
+            </lightning-combobox>
+          </template>
+
+          <!-- Date-only value -->
+          <template if:true={isDateOnlyField}>
+            <lightning-input
+              type="date"
+              label=""
+              value={filterValue}
+              onchange={handleDateValueChange}>
+            </lightning-input>
+          </template>
+
+          <!-- Datetime value -->
+          <template if:true={isDateTimeField}>
+            <lightning-input
+              type="datetime"
+              label=""
+              value={filterValue}
+              onchange={handleDateTimeValueChange}>
+            </lightning-input>
+          </template>
+
+          <!-- Only show text input if NOT a picklist or a date -->
+          <!-- Text fallback -->
+          <template if:false={isPicklistField}>
+            <template if:false={isDateOnlyField}>
+              <template if:false={isDateTimeField}>
+                <lightning-input
+                  type="text"
+                  label="Value"
+                  value={filterValue}
+                  onchange={handleValueChange}>
+                </lightning-input>
+              </template>
+            </template>
+          </template>
+        </div>
+
+        <!-- Apply Button -->
+        <div class="slds-col slds-align_absolute-center slds-m-top_large">
+          <lightning-button label="Apply Filter" onclick={applyFilter} variant="neutral">
+          </lightning-button>
+          <lightning-button class="slds-p-left_x-small"
+              label="Clear Filters"
+              variant="neutral"
+              onclick={clearFilters}>
+          </lightning-button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 📊 Data Table -->
+    <c-custom-datatable key-field="Id" data={accounts} columns={columns} draft-values={draftValues} onsave={handleSave}
+      hide-checkbox-column="true" onsort={handleSort}  errors={tableErrors} class="slds-m-around_small">
+    </c-custom-datatable>
+
+
+    <!-- ⏮️ Pagination -->
+    <div class="slds-m-around_small slds-align_absolute-center">
+      <lightning-button label="Previous" onclick={prevPage} disabled={isFirstPage} class="slds-m-right_small">
+      </lightning-button>
+
+      <span>Page {pageNumber} of {totalPages}</span>
+
+      <lightning-button label="Next" onclick={nextPage} disabled={isLastPage} class="slds-m-left_small">
+      </lightning-button>
+    </div>
+
+  </lightning-card>
+</template>
